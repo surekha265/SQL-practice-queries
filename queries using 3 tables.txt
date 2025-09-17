@@ -1,4 +1,4 @@
-Queries using 3 tables:
+Queries using 3 tables(join queries):
 
 
 
