@@ -1,3 +1,8 @@
+Queries using 3 tables:
+
+
+
+
 CREATE DATABASE `Parks_and_Recreation`;
 USE `Parks_and_Recreation`;
 
