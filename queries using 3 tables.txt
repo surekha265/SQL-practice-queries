@@ -4,7 +4,7 @@ Queries using 3 tables(join queries):
 
 
 
->>>>>>> 4f5863ed385e753f983ebf9e7dc23141a9ea73bf
+
 CREATE DATABASE `Parks_and_Recreation`;
 USE `Parks_and_Recreation`;
 
