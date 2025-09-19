@@ -1,0 +1,102 @@
+->Write a query to list all students with their marks in each subject.
+(INNER JOIN)
+SELECT s.student_name,m.subject,m.marks
+FROM student s INNER  JOIN student_marks m 
+on s.student_id=m.student_id;
+_______________________________________________________________________
+->Fetch all students, even if they don’t have marks yet.
+(LEFT JOIN)
+SELECT s.student_name,m.marks,m.subject
+from student s LEFT JOIN student_marks m 
+on s.student_id=m.student_id;
+_______________________________________________________________________
+->Fetch all subjects and marks, even if the student record is missing.
+(RIGHT JOIN)
+SELECT s.student_name,m.marks,m.subject
+from student s RIGHT JOIN student_marks m 
+on s.student_id=m.student_id;
+_________________________________________________________________________
+->Get the average marks per student with their name.
+SELECT s.student_name,AVG(m.marks)
+from student s join SELECT s.student_id,s.student_name,SUM(m.marks),ROUND(SUM(m.marks) / COUNT(m.subject))
+FROM student s JOIN student_marks m 
+ON s.student_id = m.student_id
+GROUP BY s.student_id, s.student_name;student_marks m 
+ON s.student_id=m.student_id
+GROUP BY s.student_id,s.student_name;
+_______________________________________________________________________
+->Display the highest marks scored in each subject along with the student’s name.
+SELECT m.subject,s.student_name,m.marks
+FROM student s JOIN student_marks m 
+ON m.student_id = s.student_id
+WHERE m.marks = (SELECT MAX(marks) 
+                  FROM student_marks
+                  WHERE subject = m.subject);
+_______________________________________________________________________________
+->Find the students who didn’t appear in any exam.
+SELECT s. student_name
+FROM student s JOIN student_marks m 
+on s.student_id=m.student_id
+WHERE m.marks IS null;
+______________________________________________________________________________
+->Show students with more than 2 subjects in which they scored below 40.
+SELECT s.student_name,m.subject,m.marks
+FROM student s JOIN student_marks m 
+on s.student_id=m.student_id
+WHERE m.marks<40;
+__________________________________________________________________________
+->List all students with their total marks and percentage.
+SELECT s.student_id,s.student_name,SUM(m.marks),ROUND(SUM(m.marks) / COUNT(m.subject))
+FROM student s JOIN student_marks m 
+ON s.student_id = m.student_id
+GROUP BY s.student_id, s.student_name;
+_______________________________________________________________________________
+->Find the top 3 students in each subject (use RANK() or subquery).
+SELECT subject,student_name,marks,rank
+FROM (SELECT m.subject,s.student_name,m.marks,
+      RANK() OVER (PARTITION BY m.subject ORDER BY m.marks DESC) AS rank
+      FROM student_marks m JOIN student s ON m.student_id = s.student_id) ranked
+WHERE 
+    rank <= 3;
+______________________________________________________________________________
+->Write a query to show class toppers (highest total marks per class).
+SELECT s.class,s.student_id,s.student_name,SUM(m.marks) AS total_marks
+FROM student s JOIN student_marks m ON s.student_id = m.student_id
+GROUP BY s.student_id, s.student_name, s.class
+HAVING SUM(m.marks) = (SELECT MAX(total_marks)
+FROM (SELECT s2.class,s2.student_id,SUM(m2.marks) AS total_marks
+      FROM student s2 JOIN student_marks m2 ON s2.student_id = m2.student_id
+      WHERE s2.class = s2.class
+      GROUP BY s2.student_id, s2.class) AS class_totals)
+ORDER BY s.class;
+_______________________________________________________________________________
+->Find students who scored highest in Math but lowest in Science.
+SELECT s.student_id, s.student_name
+FROM student s
+WHERE s.student_id IN (
+    SELECT m1.student_id
+    FROM student_marks m1
+    WHERE m1.subject = 'Math'
+    AND m1.marks = (
+        SELECT MAX(marks)
+        FROM student_marks
+        WHERE subject = 'Math'
+    )
+)
+AND s.student_id IN (
+    SELECT m2.student_id
+    FROM student_marks m2
+    WHERE m2.subject = 'Science'
+    AND m2.marks = (
+        SELECT MIN(marks)
+        FROM student_marks
+        WHERE subject = 'Science'
+    )
+);
+__________________________________________________________________________
+->Show students who have never failed (marks ≥ 40 in all subjects).
+SELECT s.student_id, s.student_name
+FROM student s JOIN student_marks m 
+ON s.student_id = m.student_id
+GROUP BY s.student_id, s.student_name
+HAVING MIN(m.marks) >= 40;
